@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: ProviderServer
+  cloud:
+    consul:
+      host: 192.168.102.20
+      port: 8500
+      discovery:
+        enabled: true
+        # ??????? ip ??? hostname
+        hostname: ${spring.cloud.client.ip-address}
+        instance-id: ${spring.application.name}:${spring.cloud.consul.discovery.hostname}:${server.port}
+        #health-check-path: ${server.servlet.context-path}/actuator/health # ?????context-path?????????
+        health-check-interval: 15s # ??15s???????
+        register: true
+        register-health-check: true
+        service-name: ${spring.application.name}
+        health-check-critical-timeout: 10s
+
+# ????
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

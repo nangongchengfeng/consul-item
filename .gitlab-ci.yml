@@ -1,0 +1,66 @@
+stages:
+  - build
+  - uat_deploy
+
+before_script:
+  - export PATH=/usr/lib/jvm/java-8/bin:${PATH}        # 将java路径添加到PATH路径中。如果是java 11，使用/usr/lib/jvm/java-11/bin。
+
+build:
+  stage: build
+  tags:
+    - uat
+  only:
+    - uat
+  cache:
+    paths:
+      - consul-Consumer/target/*.jar
+      - consul-Provider/target/*.jar
+    policy: push
+    key: ${CI_BUILD_REF_NAME}
+  script:
+    - mvn clean install -Dmaven.test.skip=true
+
+
+uat_consul-Consumer:
+  stage: uat_deploy
+  environment:
+    name: dev
+  tags:
+    - uat
+  only:
+    - uat
+  cache:
+    paths:
+      - ${APP_SUB_DIR}/target/*.jar
+    policy: pull
+    key: ${CI_BUILD_REF_NAME}
+  variables:
+    APP_ID: 'consumer'
+    APP_SUB_DIR: 'consul-Consumer'
+  script:
+    - pwd && ls
+    #- export
+    - /bin/bash   /opt/k8s/app.sh
+  when: manual
+
+uat_consul-Provider:
+  stage: uat_deploy
+  environment:
+    name: dev
+  tags:
+    - uat
+  only:
+    - uat
+  cache:
+    paths:
+      - ${APP_SUB_DIR}/target/*.jar
+    policy: pull
+    key: ${CI_BUILD_REF_NAME}
+  variables:
+    APP_ID: 'provider'
+    APP_SUB_DIR: 'consul-Provider'
+  script:
+    - pwd && ls
+    #- export
+    - /bin/bash   /opt/k8s/app.sh
+  when: manual
